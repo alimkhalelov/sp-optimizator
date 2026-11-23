@@ -1,0 +1,23 @@
+node_modules/
+.next/
+dist/
+build/
+.env
+.env.*
+*.log
+__pycache__/
+.DS_Store
+Thumbs.db
+
+# Internal agent state, temp caches, and local dev artifacts
+.agents/
+.hf_tmp/
+.hyperframes/
+brag-output/
+assets/screenshots/
+
+# Local ASCII background experiment scratch scripts
+scripts/snap_ascii.py
+scripts/test_ascii_refined.py
+scripts/test_fire_render.py
+scripts/test_ascii_integration.py

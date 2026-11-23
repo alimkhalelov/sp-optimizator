@@ -1,0 +1,72 @@
+PayFlow B2B Platform Support Policy (v4.2):
+1. Payout Holds & Refunds: If 14-day chargeback rate exceeds 1.2%, merchant account enters automatic 72h Hold_Review. Submitting verified tracking IDs via /v2/disputes/evidence allows early release of up to 85% within 4 hours.
+2. Webhook SLA Credits: If payout.settled delivery lags >180s for >5% of daily transactions, Enterprise clients get a 10% monthly fee service credit (capped at $1,500), excluding merchant-side HTTP 504 or TCP drops <=3000ms.
+3. Duplicate Charges: Two successful authorizations sharing an Idempotency-Key within <60s still in Authorized (not Settled) status qualify for automatic 0% fee void/refund on the duplicate.
+4. L2 Risk Escalation: Mandatory when held amount >$12,000, SIGN_MISMATCH_401 occurs >3 consecutive times, or pre-litigation notice is mentioned.
+
+Chat history:
+User: Hello, payout on MERCH-88412 ($18,450) has been stuck in Hold_Review since this morning instead of settling at 09:00 MSK.
+Support: Checked MERCH-88412. The $18,450 payout hit an automatic 72h Hold_Review because 14-day chargebacks rose to 1.45%.
+User: Our new storefront forgot tracking sync, orders already shipped via CDEK and Russian Post. How do we speed up release before supplier payments tomorrow?
+Support: Submit verified tracking IDs via /v2/disputes/evidence. Once verified, we can release up to 85% (~$15,682.50) within 4 hours.
+User: Tried posting tracking IDs, getting SIGN_MISMATCH_401 four times in a row even though the API key has not changed.
+Support: Confirmed 4x SIGN_MISMATCH_401 errors. Your HMAC-SHA256 canonical JSON likely omits the nested tracking_ids array in X-Signature.
+User: Dev is fixing the signature. Also yesterday 14:00-19:00 payout.settled webhooks delayed 4-6 min for ~12% of events. We are Enterprise ($9,500/mo fee). Do we get an SLA credit?
+Support: Telemetry shows 11.8% total >180s delays, but 7% were merchant HTTP 504 / 2500ms timeouts; only 4.8% were our queue delays.
+User: So 4.8% is below the 5% bar and no 10% credit applies?
+Support: Correct, clause 2 requires >5% platform-caused delays. At 4.8% no automatic credit triggers, though I can export detailed logs.
+User: Also order ORD-99210 ($420): customer double-clicked, two calls with same Idempotency-Key 18s apart, both still Authorized (not Settled). 0% fee refund?
+Support: Yes, 18s gap (<60s), matching Idempotency-Key, still Authorized: duplicate voids automatically at 0% gateway fee.
+User: Dev fixed JSON canonicalization, now getting 422 on shipped_at date format. Management says if funds are not released by tomorrow we will send a pre-litigation claim.
+Support: Noted. shipped_at expects ISO-8601 UTC (2026-11-21T10:30:00Z). Given $18,450 hold, 4x SIGN_MISMATCH_401, and pre-litigation notice, L2 Risk escalation is mandatory.
+User: Give the CFO a crisp 4-point answer: max early release USD, whether L2 escalation is required, webhook SLA credit eligibility, and duplicate fee refund status.
+
+Reference Ledger:
+RULE_101|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=1500
+RULE_102|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=1600
+RULE_103|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=1700
+RULE_104|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=1800
+RULE_105|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=1900
+RULE_106|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2000
+RULE_107|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2100
+RULE_108|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2200
+RULE_109|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2300
+RULE_110|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2400
+RULE_111|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2500
+RULE_112|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2600
+RULE_113|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2700
+RULE_114|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2800
+RULE_115|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=2900
+RULE_116|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3000
+RULE_117|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3100
+RULE_118|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3200
+RULE_119|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3300
+RULE_120|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3400
+RULE_121|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3500
+RULE_122|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3600
+RULE_123|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3700
+RULE_124|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3800
+RULE_125|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=3900
+RULE_126|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4000
+RULE_127|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4100
+RULE_128|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4200
+RULE_129|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4300
+RULE_130|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4400
+RULE_131|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4500
+RULE_132|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4600
+RULE_133|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4700
+RULE_134|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4800
+RULE_135|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=4900
+RULE_136|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5000
+RULE_137|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5100
+RULE_138|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5200
+RULE_139|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5300
+RULE_140|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5400
+RULE_141|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5500
+RULE_142|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5600
+RULE_143|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=true|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5700
+RULE_144|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=false|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5800
+RULE_145|region=EU_CIS_0|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=true|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=5900
+RULE_146|region=EU_CIS_1|rail=SEPA_SWIFT_CARD|max_hold_h=24|auto_release=false|kyb_tier=1|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=6000
+RULE_147|region=EU_CIS_2|rail=SEPA_SWIFT_CARD|max_hold_h=48|auto_release=true|kyb_tier=2|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=6100
+RULE_148|region=EU_CIS_3|rail=SEPA_SWIFT_CARD|max_hold_h=72|auto_release=false|kyb_tier=3|settlement_cutoff=17:00_UTC|fallback_webhook_retry_ms=6200

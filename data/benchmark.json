@@ -1,0 +1,213 @@
+{
+  "model": "gemini-4-hydrogen",
+  "measuredAt": "2026-11-21T16:45:07.177Z",
+  "liveProbeStatus": "Probe error (This operation was aborted); input tokens 100% live-measured via :countTokens",
+  "measurementMethod": "Input tokens live-measured via gemini-4-hydrogen:countTokens; PNG rendered via pxpipe-proxy export; output/cost modeled on published Gemini 4 Hydrogen rates ($1.50/1M in, $7.50/1M out+thinking, $0.075/1M implicit cache >=4,096 tok).",
+  "pricingPer1M": {
+    "inputUsd": 1.5,
+    "cacheReadUsd": 0.075,
+    "outputAndThinkingUsd": 7.5
+  },
+  "scenario": {
+    "company": "PayFlow B2B Support Copilot",
+    "caseSummary": "15-turn payout hold, webhook SLA, and duplicate charge dispute + 60-order ledger",
+    "monthlyRequests": 100000,
+    "pxpipeReport": {
+      "outDir": "assets/px_min/pxpipe-export-JG2OIb",
+      "fileCount": 0,
+      "sourceChars": 6846,
+      "pageCount": 1,
+      "totalPngBytes": 21642,
+      "textTokens": 1850,
+      "imageTokens": 504,
+      "percentSaved": 72.8,
+      "factsheetItemCount": 10,
+      "factsheetDropped": 0,
+      "model": "claude-sonnet-4-5",
+      "cols": 312,
+      "generatedAt": "2026-11-21T16:44:49.615Z"
+    }
+  },
+  "stages": [
+    {
+      "id": "raw_ru",
+      "step": "01",
+      "title": "Raw Russian Chat",
+      "subtitle": "Naive B2B support prompt sent verbatim in Cyrillic with default thinking",
+      "inputTokens": 5340,
+      "cachedTokens": 0,
+      "outputAndThinkingTokens": 1200,
+      "costPerTurnUsd": 0.01701,
+      "chars": 14061,
+      "sample": "Регламент службы поддержки B2B-платформы PayFlow для корпоративных клиентов (редакция 4.2):\n1. Возвраты и заморозка выплат: при превышении порога чарджбэков 1.2% за последние 14 дней система автоматически переводит расчетный счет мерчанта в статус Hold_Review на 72 часа. Если мерчант предоставляет подтвержденные трек-номера отгрузки по спорным заказам через API /v2/disputes/evidence, аналитик может разморозить до 85% суммы досрочно в течение 4 часов.\n2. Нарушение SLA по вебхукам: при задержке доставки событий payout.settled более 180 секунд более чем для",
+      "params": {
+        "language": "ru",
+        "format": "prose",
+        "thinking_level": "high (default)",
+        "media_resolution": "none",
+        "response_schema": false,
+        "cache_discount": "0%"
+      },
+      "note": "Cyrillic splits into 2x-3x more BPE tokens than English. Default high thinking generates ~960 hidden tokens billed at $7.50/1M."
+    },
+    {
+      "id": "english",
+      "step": "02",
+      "title": "English Normalization",
+      "subtitle": "Same 15-turn PayFlow dispute and 60-order ledger translated cleanly to English",
+      "inputTokens": 4105,
+      "cachedTokens": 0,
+      "outputAndThinkingTokens": 1100,
+      "costPerTurnUsd": 0.014408,
+      "chars": 10182,
+      "sample": "PayFlow B2B Platform Support Policy (v4.2):\n1. Payout Holds & Refunds: If 14-day chargeback rate exceeds 1.2%, merchant account enters automatic 72h Hold_Review. Submitting verified tracking IDs via /v2/disputes/evidence allows early release of up to 85% within 4 hours.\n2. Webhook SLA Credits: If payout.settled delivery lags >180s for >5% of daily transactions, Enterprise clients get a 10% monthly fee service credit (capped at $1,500), excluding merchant-side HTTP 504 or TCP drops <=3000ms.\n3. Duplicate Charges: Two successful authorizations sharing an I",
+      "params": {
+        "language": "en",
+        "format": "prose",
+        "thinking_level": "high (default)",
+        "media_resolution": "none",
+        "response_schema": false,
+        "cache_discount": "0%"
+      },
+      "note": "Immediate input token drop with zero semantic loss simply by moving Latin/English BPE density before any structural change."
+    },
+    {
+      "id": "json_pretty",
+      "step": "03",
+      "title": "Structured JSON",
+      "subtitle": "Conversational filler stripped into typed keys and indented JSON schema",
+      "inputTokens": 5742,
+      "cachedTokens": 0,
+      "outputAndThinkingTokens": 900,
+      "costPerTurnUsd": 0.015363,
+      "chars": 11266,
+      "sample": "Analyze account state and answer events t=6.\n{\n  \"policy\": {\n    \"hold\": {\n      \"cb_gt\": 0.012,\n      \"d\": 14,\n      \"hold_h\": 72,\n      \"early_pct\": 0.85,\n      \"sla_h\": 4,\n      \"ep\": \"/v2/disputes/evidence\"\n    },\n    \"sla\": {\n      \"lag_s\": 180,\n      \"min_pct\": 0.05,\n      \"credit_pct\": 0.1,\n      \"cap_usd\": 1500,\n      \"excl\": [\n        \"HTTP_504\",\n        \"TCP<=3000ms\"\n      ]\n    },\n    \"dup\": {\n      \"max_gap_s\": 60,\n      \"st\": \"Authorized\",\n      \"fee\": 0\n    },\n    \"l2\": {\n      \"hold_gt\": 12000,\n      \"sign_err_gt\": 3,\n      \"pre_lit\": true",
+      "params": {
+        "language": "en",
+        "format": "json (indented)",
+        "thinking_level": "high (default)",
+        "media_resolution": "none",
+        "response_schema": false,
+        "cache_discount": "0%"
+      },
+      "note": "Removing polite Russian/English phrasing keeps every tracking ID, fee cap, and policy rule while compressing payload grammar."
+    },
+    {
+      "id": "json_min",
+      "step": "04",
+      "title": "Minified Zero-Newline",
+      "subtitle": "Whitespace, indentation, and line breaks stripped from the JSON payload",
+      "inputTokens": 3510,
+      "cachedTokens": 0,
+      "outputAndThinkingTokens": 900,
+      "costPerTurnUsd": 0.012015,
+      "chars": 6846,
+      "sample": "Analyze account state and answer events t=6.\n{\"policy\":{\"hold\":{\"cb_gt\":0.012,\"d\":14,\"hold_h\":72,\"early_pct\":0.85,\"sla_h\":4,\"ep\":\"/v2/disputes/evidence\"},\"sla\":{\"lag_s\":180,\"min_pct\":0.05,\"credit_pct\":0.1,\"cap_usd\":1500,\"excl\":[\"HTTP_504\",\"TCP<=3000ms\"]},\"dup\":{\"max_gap_s\":60,\"st\":\"Authorized\",\"fee\":0},\"l2\":{\"hold_gt\":12000,\"sign_err_gt\":3,\"pre_lit\":true}},\"acct\":{\"id\":\"MERCH-88412\",\"tier\":\"Enterprise\",\"fee_mo\":9500,\"hold_usd\":18450,\"cb_14d\":0.0145},\"orders\":[{\"o\":\"ORD-88000\",\"usd\":180,\"st\":\"Disputed\",\"c\":\"CDEK\",\"trk\":\"TRK-910000\",\"lag\":0,\"http\":504},{\"o",
+      "params": {
+        "language": "en",
+        "format": "json (minified)",
+        "thinking_level": "high (default)",
+        "media_resolution": "none",
+        "response_schema": false,
+        "cache_discount": "0%"
+      },
+      "note": "Removing pretty-print spaces and newline tokens trims structural overhead before vision rasterization."
+    },
+    {
+      "id": "pxpipe_png",
+      "step": "05",
+      "title": "pxpipe Vision Sheet",
+      "subtitle": "Minified state rasterized locally into a 1568x228 grayscale PNG page",
+      "inputTokens": 603,
+      "cachedTokens": 0,
+      "outputAndThinkingTokens": 900,
+      "costPerTurnUsd": 0.007654,
+      "chars": 21642,
+      "imagePath": "assets/pxpipe_page_1.png",
+      "imageTokensMedium": 603,
+      "imageTokensLow": 323,
+      "params": {
+        "language": "en",
+        "format": "png (1568x228px)",
+        "thinking_level": "high (default)",
+        "media_resolution": "medium (560 tok)",
+        "response_schema": false,
+        "cache_discount": "0%"
+      },
+      "note": "Gemini 4 bills images per resolution tier (low=280, medium=560, high=1120) regardless of character density. Break-even triggers above ~600 text tokens."
+    },
+    {
+      "id": "full_after",
+      "step": "06",
+      "title": "Tuned Stack (After)",
+      "subtitle": "pxpipe medium + thinkingLevel low + responseSchema JSON + Flex/Batch tier",
+      "inputTokens": 603,
+      "cachedTokens": 0,
+      "outputAndThinkingTokens": 80,
+      "costPerTurnUsd": 0.001504,
+      "flexCostPerTurnUsd": 0.000752,
+      "chars": 21642,
+      "imagePath": "assets/pxpipe_page_1.png",
+      "params": {
+        "language": "en",
+        "format": "png + json schema",
+        "thinking_level": "low",
+        "media_resolution": "medium (560 tok)",
+        "response_schema": true,
+        "cache_note": "Implicit cache (-95%) requires >=4,096 prefix tokens"
+      },
+      "note": "Cutting output/thinking tokens (5x cost multiplier) with thinking_level=low and response_schema unlocks the biggest real-world bill & TTFT drop."
+    }
+  ],
+  "monthly": {
+    "requests": 100000,
+    "beforeMonthlyUsd": 1701,
+    "afterMonthlyUsd": 150.4,
+    "afterFlexMonthlyUsd": 75.2,
+    "savedMonthlyUsd": 1550.6,
+    "inputReductionPct": 88.7,
+    "costReductionPct": 91.2,
+    "cacheCrossoverRule": "Implicit caching (-95% on prefix) only activates at >=4,096 prefix tokens. Below 4,096 tokens, pxpipe PNG wins. Above 4,096 static prefix tokens, stable cached text ($0.075/1M) can beat single uncached PNGs unless multi-page PNG prefix also exceeds 4,096 tokens."
+  },
+  "flashLite": {
+    "model": "gemini-3.5-flash-lite",
+    "pricingPer1M": {
+      "inputUsd": 0.3,
+      "outputUsd": 2.5
+    },
+    "countTokens": {
+      "totalTokens": 1057,
+      "imageTokens": 1044,
+      "textTokens": 13
+    },
+    "verboseRun": {
+      "ttftMs": 3502,
+      "totalMs": 5463,
+      "inputTokens": 1062,
+      "outputTokens": 669,
+      "thoughtTokens": 604
+    },
+    "highResLowThink": {
+      "ttftMs": 1358,
+      "totalMs": 1444,
+      "inputTokens": 1059,
+      "outputTokens": 61
+    },
+    "highResMedThink": {
+      "ttftMs": 4193,
+      "totalMs": 4205,
+      "inputTokens": 1059,
+      "outputTokens": 47,
+      "thoughtTokens": 1386,
+      "accurate": true
+    },
+    "textMinRun": {
+      "ttftMs": 2227,
+      "totalMs": 2271,
+      "inputTokens": 3517,
+      "outputTokens": 62,
+      "thoughtTokens": 0,
+      "accurate": true
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "sourceChars": 10108,
+  "files": [],
+  "pages": [
+    {
+      "filename": "page-001.png",
+      "bytes": 32176,
+      "width": 1568,
+      "height": 338
+    }
+  ],
+  "cols": 312,
+  "model": "claude-sonnet-4-5",
+  "generatedAt": "2026-11-21T15:59:56.598Z",
+  "tokenReport": {
+    "textTokens": 2732,
+    "imageTokens": 728,
+    "percentSaved": 73.4,
+    "factsheetItemCount": 96,
+    "factsheetDropped": 0
+  }
+}
